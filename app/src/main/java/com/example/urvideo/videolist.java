@@ -1,71 +1,64 @@
 package com.example.urvideo;
-
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
-import android.content.ContentResolver;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-
-import java.io.File;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class videolist extends AppCompatActivity {
 
-    private static final int M_pr=1;
-
-    ListView listView;
-    ArrayAdapter arrayAdapter;
-    ArrayList<String> arrayList;
-
-    private String meadia;
-
     @Override
+
     protected void onCreate(Bundle savedInstanceState) {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE}, PackageManager.PERMISSION_GRANTED);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_videolist);
-        File file =  new File(Environment.getExternalStorageDirectory().toString());
-        String video;
-        video[] = {String.valueOf(file)};
+
+        final List<String> list = new ArrayList<>();
+
+        //////////////////
+
+        Uri uri;
+        Cursor cursor;
+        int column_index_data, column_index_folder_name;
+        ArrayList<String> listOfAllvedios = new ArrayList<String>();
+        String absolutePathOfImage = null;
+        uri = android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        String[] projection = { MediaStore.MediaColumns.DATA,
+                MediaStore.Images.Media.};
+
+        cursor = getContentResolver().query(uri, projection, null,
+                null, null);
+
+        column_index_data = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
+        column_index_folder_name = cursor
+                .getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME);
+        while (cursor.moveToNext()) {
+            absolutePathOfImage = cursor.getString(column_index_data);
+
+            listOfAllvedios.add(absolutePathOfImage);
         }
 
+        ArrayList<String> listOfAll = new ArrayList<String>((Arrays.asList("Person 1", "Person 2", "Person 3", "Person 4" )));
 
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
 
-        ArrayAdapter adapter= new ArrayAdapter<String>(this, R.layout.activity_videolistv,video);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getApplicationContext(),1);
+        recyclerView.setLayoutManager(gridLayoutManager);
 
-        ListView listView = findViewById(R.id.videolist);
-        listView.setAdapter(adapter);
+        CustomAdapter customAdapter = new CustomAdapter(videolist.this, listOfAllvedios);
+        recyclerView.setAdapter(customAdapter);
 
-
-    }
-
-
-
-    /* private void videolist(){
-
-
-
-        ArrayList<String> pathArrList = new ArrayList<>();
-        if (cursor != null){
-            while (cursor.moveToNext()){
-                pathArrList.add(cursor.getString(0));
-            }
-            cursor.close();
         }
-        log.e("all path",pathArrList.toString());
-    }*/
+
 }
